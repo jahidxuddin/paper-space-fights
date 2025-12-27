@@ -57,6 +57,12 @@ public interface Game {
         init();
         var f = new javax.swing.JFrame();
         f.setTitle(title());
+        java.awt.image.BufferedImage logo = SpriteLoader.load("/assets/ship_L.png");
+        if (logo != null) {
+            f.setIconImage(logo);
+        } else {
+            System.err.println("Konnte Fenster-Logo nicht laden: /assets/ship_L.png");
+        }
         f.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
         f.add(new SwingScreen(this));
         f.pack();

@@ -2,8 +2,10 @@ package de.ju.spacefights;
 
 import de.ju.spacefights.lib.Game;
 import de.ju.spacefights.lib.GameObj;
+import de.ju.spacefights.lib.SoundLoader;
 import de.ju.spacefights.lib.Vertex;
 
+import javax.sound.sampled.Clip;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -16,6 +18,7 @@ public class Main implements Game {
     private ScoreDisplay scoreDisplay;
     private boolean isPaused = false;
     private boolean isGameOver = false;
+    private Clip backgroundMusic;
 
     @Override
     public String title() {
@@ -52,6 +55,13 @@ public class Main implements Game {
 
     @Override
     public void init() {
+        if (backgroundMusic != null && backgroundMusic.isRunning()) {
+            backgroundMusic.stop();
+            backgroundMusic.close();
+        }
+
+        backgroundMusic = SoundLoader.playMusic("/assets/music.wav");
+
         this.player = new Player(this, new Vertex((double) (width() - 96) / 2, (double) (height() - 96) / 2), 96, 96);
 
         this.goss = new ArrayList<>();
@@ -222,7 +232,7 @@ public class Main implements Game {
         Game.super.paintTo(g);
 
         if (isGameOver) {
-            drawTextToScreen(g, "GAME OVER");
+            drawTextToScreen(g, "GAME OVER - PRESS ESC");
         } else if (isPaused) {
             drawTextToScreen(g, "PAUSED");
         }

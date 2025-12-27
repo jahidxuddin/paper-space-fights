@@ -1,19 +1,19 @@
 package de.ju.spacefights.lib;
 
 import javax.sound.sampled.*;
-import java.net.URL;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 
 public class SoundLoader {
     public static void playSound(String path) {
         new Thread(() -> {
             try {
-                URL url = SoundLoader.class.getResource(path);
-                if (url == null) {
-                    System.err.println("Sound nicht gefunden: " + path);
-                    return;
-                }
+                InputStream audioSrc = SoundLoader.class.getResourceAsStream(path);
+                if (audioSrc == null) return;
 
-                AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
+                InputStream bufferedIn = new BufferedInputStream(audioSrc);
+                AudioInputStream audioIn = AudioSystem.getAudioInputStream(bufferedIn);
+
                 Clip clip = AudioSystem.getClip();
                 clip.open(audioIn);
 
@@ -28,5 +28,25 @@ public class SoundLoader {
                 System.err.println(e.getMessage());
             }
         }).start();
+    }
+
+    public static Clip playMusic(String path) {
+        try {
+            InputStream audioSrc = SoundLoader.class.getResourceAsStream(path);
+            if (audioSrc == null) return null;
+
+            InputStream bufferedIn = new BufferedInputStream(audioSrc);
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(bufferedIn);
+
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+            clip.start();
+
+            return clip;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
