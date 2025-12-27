@@ -14,6 +14,8 @@ public class Main implements Game {
     private List<List<? extends GameObj>> goss;
     private Player player;
     private ScoreDisplay scoreDisplay;
+    private boolean isPaused = false;
+    private boolean isGameOver = false;
 
     @Override
     public String title() {
@@ -74,7 +76,15 @@ public class Main implements Game {
     }
 
     @Override
+    public void move() {
+        if (isPaused || isGameOver) return;
+        Game.super.move();
+    }
+
+    @Override
     public void doChecks() {
+        if (isPaused || isGameOver) return;
+
         List<GameObj> enemies = (List<GameObj>) goss.get(1);
         List<GameObj> projectiles = goss.size() > 2 ? (List<GameObj>) goss.get(2) : new ArrayList<>();
 
@@ -91,7 +101,7 @@ public class Main implements Game {
                 deadProjectiles.add(p);
 
                 if (player.getLives() <= 0) {
-                    System.exit(0);
+                    isGameOver = true;
                 }
             }
 
@@ -110,7 +120,7 @@ public class Main implements Game {
                 deadEnemies.add(e);
 
                 if (player.getLives() <= 0) {
-                    System.exit(0);
+                    isGameOver = true;
                 }
             }
         }
@@ -148,7 +158,19 @@ public class Main implements Game {
     @Override
     public void keyPressedReaction(KeyEvent keyEvent) {
         switch (keyEvent.getKeyCode()) {
+            case KeyEvent.VK_ESCAPE -> {
+                if (isGameOver) {
+                    init();
+                    isGameOver = false;
+                    isPaused = false;
+                } else {
+                    isPaused = !isPaused;
+                }
+            }
+
             case KeyEvent.VK_SPACE -> {
+                if (isPaused || isGameOver) return;
+
                 Laser shot = player.shoot();
 
                 if (goss.size() > 2) {
@@ -166,16 +188,16 @@ public class Main implements Game {
 
     @Override
     public void keyReleasedReaction(KeyEvent keyEvent) {
-
     }
 
     @Override
     public void onMouseClicked(MouseEvent e) {
-
     }
 
     @Override
     public void onMouseMoved(MouseEvent e) {
+        if (isPaused || isGameOver) return;
+
         int mouseX = e.getX();
         int mouseY = e.getY();
 
@@ -190,10 +212,32 @@ public class Main implements Game {
         double dy = mouseY - screenPlayerY;
 
         double angleRad = Math.atan2(dy, dx);
-
         double angleDeg = Math.toDegrees(angleRad);
 
         player.setAngle(angleDeg + 90);
+    }
+
+    @Override
+    public void paintTo(Graphics g) {
+        Game.super.paintTo(g);
+
+        if (isGameOver) {
+            drawTextToScreen(g, "GAME OVER");
+        } else if (isPaused) {
+            drawTextToScreen(g, "PAUSED");
+        }
+    }
+
+    private void drawTextToScreen(Graphics g, String text) {
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, width(), height());
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 40));
+        FontMetrics fm = g.getFontMetrics();
+        int x = (width() - fm.stringWidth(text)) / 2;
+        int y = (height() / 2) + fm.getAscent() / 4;
+        g.drawString(text, x, y);
     }
 
     @Override
